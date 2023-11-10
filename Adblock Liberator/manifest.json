@@ -1,0 +1,25 @@
+{
+    "manifest_version": 3,
+    "name": "Adblock Liberator",
+    "version": "0.1",
+    "description": "AdBlock Liberator empowers users to navigate the online landscape without the hindrance of aggressive advertisements. This extension allows you to subtly navigate through the web's ad-block defenses, providing users with a seamless, ad-free browsing experience on platforms like YouTube.",
+    "icons": {
+        "16": "images/icon16.png",
+        "48": "images/icon48.png",
+        "128": "images/icon128.png"
+    },
+    "permissions": [
+        "activeTab"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://www.youtube.com/*"
+            ],
+            "js": [
+                "adblock-liberator.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ]
+}
