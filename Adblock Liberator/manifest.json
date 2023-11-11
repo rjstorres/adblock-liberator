@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Adblock Liberator",
-    "version": "0.1",
+    "version": "0.2.1",
     "description": "AdBlock Liberator adeptly bypasses ad-block defenses, especially on platforms like YouTube.",
     "icons": {
         "16": "images/icon16.png",

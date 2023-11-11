@@ -28,12 +28,24 @@ function setCurrentUrl() {
 
 let _currentPlayer = null;
 let _isNewPlayerNeeded = false;
+let _errorElementFound = false;
+
+function hasErrorElement(){
+    if(document.getElementById("error-screen")?.childElementCount > 0){
+        console.log("ErrorElement found with content");
+        _errorElementFound = true;
+        return true;
+    }
+
+    return false;
+}
+
 function shouldRenewIFramePlayer() {
-    return _isNewPlayerNeeded;
+    return _isNewPlayerNeeded && _errorElementFound;
 }
 
 function resetCurrentPlayer() {
-    if (_currentPlayer == null)
+    if (_currentPlayer == null || !_errorElementFound)
         return;
 
     _currentPlayer.remove();
@@ -103,10 +115,9 @@ function ObserveChanges() {
             const isVideo = getCurrentUrl().toLowerCase().includes("watch");
             // Check for the presence of the player element
             const elementToRemove = document.getElementById("player");
-            const errorElement = document.getElementById("error-screen");
-            if (elementToRemove && (errorElement || shouldRenewIFramePlayer())  && isVideo) {
+            if (elementToRemove && isVideo && (hasErrorElement() || shouldRenewIFramePlayer())) {
                 setOriginalHeight(elementToRemove);
-                console.log("Player element found. Executing onPageLoad.");
+                console.log("Player element found. Executing createIframePlayer.");
                 createIframePlayer();
             }
         });
