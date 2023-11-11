@@ -3,7 +3,7 @@ console.log("Adblock Liberator Loaded!");
 /**************************************
  * Globals
 ***************************************/
-var _height = null;
+let _height = null;
 function getOriginalHeight() {
     return _height;
 }
@@ -15,7 +15,7 @@ function setOriginalHeight(playerElement) {
     }
 }
 
-var _currentUrl = null;
+let _currentUrl = null;
 
 function getCurrentUrl() {
     return _currentUrl;
@@ -26,13 +26,33 @@ function setCurrentUrl() {
     console.log("Current URL set to: " + _currentUrl);
 }
 
+let _currentPlayer = null;
+let _isNewPlayerNeeded = false;
+function shouldRenewIFramePlayer() {
+    return _isNewPlayerNeeded;
+}
+
+function resetCurrentPlayer() {
+    if (_currentPlayer == null)
+        return;
+
+    _currentPlayer.remove();
+    _isNewPlayerNeeded = true;
+    console.log("CurrentPlayer reset", _currentPlayer)
+}
+
+function setCurrentPlayer(player) {
+    _currentPlayer = player
+    _isNewPlayerNeeded = false;
+}
+
 /**************************************
  * Script
 ***************************************/
 
-function onPageLoad() {
+function createIframePlayer() {
     // Fetch the element by its ID
-    let playerElement = document.getElementById("player");
+    const playerElement = document.getElementById("player");
 
     // Check if the element exists before removing its contents
     if (playerElement) {
@@ -41,14 +61,14 @@ function onPageLoad() {
 
         // Create the new player
         // Create the div with the specified class
-        let newPlayer = document.createElement("div");
+        const newPlayer = document.createElement("div");
         newPlayer.id = "new-player-container"
         newPlayer.className = "style-scope ytd-watch-flexy";
         newPlayer.style.height = "100%";
 
         // Create the iframe element
-        let embedUrl = window.location.href.replace("watch?v=", "embed/");
-        let iframe = document.createElement("iframe");
+        const embedUrl = window.location.href.replace("watch?v=", "embed/");
+        const iframe = document.createElement("iframe");
         iframe.width = "100%";
         iframe.height = "100%";
         iframe.src = `${embedUrl}?autoplay=1`;
@@ -61,6 +81,8 @@ function onPageLoad() {
         newPlayer.appendChild(iframe);
         playerElement.appendChild(newPlayer);
         playerElement.style.height = `${getOriginalHeight()}px`;
+
+        setCurrentPlayer(newPlayer);
         console.log("Iframe added to the element!");
     } else {
         console.log("Player element Not Found");
@@ -72,19 +94,20 @@ function onPageLoad() {
 ***************************************/
 
 function ObserveChanges() {
-    let observer = new MutationObserver(function (mutations) {
+    const observer = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
-            let isVideo = window.location.href.toLowerCase().includes("watch")
-
+            if (getCurrentUrl() != window.location.href) {
+                setCurrentUrl();
+                resetCurrentPlayer();
+            }
+            const isVideo = getCurrentUrl().toLowerCase().includes("watch");
             // Check for the presence of the player element
-            let elementToRemove = document.getElementById("player");
-            if (elementToRemove && isVideo) {
-                if(getCurrentUrl() != window.location.href){
-                    setOriginalHeight(elementToRemove);
-                    setCurrentUrl()
-                    console.log("Player element found. Executing onPageLoad.");
-                    onPageLoad();
-                }
+            const elementToRemove = document.getElementById("player");
+            const errorElement = document.getElementById("error-screen");
+            if (elementToRemove && (errorElement || shouldRenewIFramePlayer())  && isVideo) {
+                setOriginalHeight(elementToRemove);
+                console.log("Player element found. Executing onPageLoad.");
+                createIframePlayer();
             }
         });
     });
